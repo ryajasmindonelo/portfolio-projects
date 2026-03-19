@@ -1,0 +1,548 @@
+---
+title: "Demographic and Behavioral Drivers of Average Trip Distance Insights from the 2017 NHTS"
+author: "Faithrose Daniel, Rya Jasmin Donelo, Ayandiswa Tsabedze"
+date: "May 8, 2025"
+format: 
+  pdf:
+    keep-tex: true
+    include-in-header: 
+      text: |
+        \usepackage{fvextra}
+        \DefineVerbatimEnvironment{Highlighting}{Verbatim}{breaklines,commandchars=\\\{\}}
+        \DefineVerbatimEnvironment{OutputCode}{Verbatim}{breaklines,commandchars=\\\{\}}
+    geometry: 
+      - left=1in
+      - right=1in
+      - top=1in
+      - bottom=1in
+      
+bibliography: references.bib
+---
+
+```{r setup-options, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+```
+
+```{r}
+library(ggplot2)
+library(broom)
+library(tidyverse)
+library(dplyr)
+library(performance)
+library(knitr)
+library(kableExtra)
+library(gridExtra)
+library(car)
+```
+
+# Abstract
+
+This study investigates the demographic, health, and behavioral predictors of average trip distance among U.S. residents using data from the 2017 National Household Travel Survey (NHTS). We fit a multiple linear regression model to predict the mean distance traveled per trip (in miles) based on variables including income, health status, age, race, travel disability, and transportation behaviors. The final model identified key predictors such as miles personally driven per year, household income, and frequency of walking, transit, and rideshare use. Individuals who drive more frequently and those with higher income tend to travel longer distances, while increased public transit or walking was associated with shorter average trip distances. Diagnostic checks confirmed that model assumptions were met and no severe multicollinearity was present. These findings highlight how structural and behavioral factors shape mobility and inform strategies to improve transportation equity.
+
+# Introduction
+
+Efficient and equitable transportation systems are vital for supporting economic productivity, promoting public health, and ensuring quality of life across diverse populations. However, mobility in the United States remains deeply unequal. Structural barriers such as income inequality, travel-limiting disabilities, racial disparities, and inconsistent infrastructure significantly influence an individual’s ability to access reliable transportation. Understanding who travels farther, and under what conditions, can reveal underlying mobility inequities and inform more inclusive transportation policies.
+
+Prior research highlights the multifaceted nature of travel behavior. For example, individuals with lower incomes and those without access to private vehicles often face disproportionate transportation costs and may travel farther to reach employment, healthcare, or essential services [@karner2020unequal]. Physical health limitations and travel disabilities can also constrain mobility, with implications for both economic participation and social inclusion [@rosenbloom2007transportation]. Moreover, race and gender remain key axes along which travel behavior varies, often due to differences in transportation mode use, perceptions of safety, and access to infrastructure [@chatman2013immigrants]. These patterns are further shaped by residential segregation and urban design, which condition the feasibility of walking, biking, or using public transit.
+
+This project uses data from the 2017 National Household Travel Survey (NHTS), a nationally representative dataset, to investigate how individual and household-level characteristics influence the average distance a person travels per trip. Specifically, we aim to answer the question: What demographic, health, and socioeconomic factors are most predictive of the average distance an individual travels? We hypothesize that individuals with higher incomes, better self-rated health, and regular access to personal vehicles will, on average, travel longer distances, while those with disabilities or limited transportation options may travel shorter distances—regardless of need. By identifying the strongest predictors of average trip distance, this analysis contributes to a more data-driven understanding of transportation equity in the U.S.
+
+
+# Methods
+
+## Data and Analysis Variables
+
+The population of interest in this study is all non-institutionalized individuals residing in the United States, as represented by the 2017 National Household Travel Survey (NHTS). This nationally representative survey, conducted by the U.S. Department of Transportation, collects detailed information on household and individual travel behavior, including demographic, socioeconomic, health, and trip-related variables (U.S. Department of Transportation, 2018).
+
+The data set used for this analysis consists of 86,578 individual-level observations. Our response variable is **average trip distance**, a continuous variable measured in miles, capturing the mean distance traveled per trip across all transportation modes (e.g., driving, walking, biking, rideshare, airplane). The response ranges from 0 to over 100 miles, though extreme outliers were examined and retained after verifying data integrity.
+
+The explanatory variables in our richest model include a mixture of continuous and categorical predictors:
+
+-   **Age** (years, numeric): Ranges from approximately 0 to 100.
+
+-   **Sex** (categorical): Male, Female.
+
+-   **Race** (categorical): White, Black, Asian, Hispanic, Multiracial, Other.
+
+-   **Household income** (categorical): \<\$10,000; \$10,000–\$34,999; \$35,000–\$74,999; \$75,000–\$149,999; \$150,000 and over.
+
+-   **Employment status** (categorical): Employed, Unemployed, Retired, Student, Other.
+
+-   **Self-rated health** (categorical): Poor, Fair, Good, Very Good, Excellent.
+
+-   **Travel disability** (categorical): No disability, Less than 6 months, 6 months–1 year, Lifelong.
+
+-   **Driver status** (categorical): Drives, Does not drive.
+
+-   **Transportation behavior variables** (numeric): Miles traveled annually by car, frequency counts for walking, biking, public transit use, rideshare use, and online delivery usage.
+
+-   **Population density of residence** (categorical): Low, Medium, High.
+
+## Statistical Methodology
+
+Given the continuous nature of our response variable (average trip distance), we employed a multiple Linear Regression to examine how demographic, health, and transportation-related characteristics predict average travel distance. This approach is appropriate because it allows us to estimate the independent effect of each explanatory variable while adjusting for others, and the model assumptions can be reasonably verified with diagnostic tools.
+
+The general population model is given by:
+
+$Y_i = \beta_0 + \beta_1 \cdot Age_i + \beta_2 \cdot Sex_i + \beta_3 \cdot Race_i + \beta_4 \cdot Income_i + \beta_5 \cdot Employment_i + \beta_6 \cdot Health_i + \beta_7 \cdot Disability_i + \beta_8 \cdot Driving_i + \beta_9 \cdot Transit_i + \epsilon$
+
+where:
+
+-   $Y_i$ is the average trip distance (in miles) for Individuals(i);
+
+-   $\beta_0$ is the intercept;
+
+-   $\beta_1$ is the coefficient to the $i^{th}$ predictor; and
+
+-   $\epsilon_i$ is the error term, assumed by normally distributed with mean 0 and constant variance.
+
+We fit the model using using ordinary least squares (OLS) regression via the lm() function in R, and dummy coding was used for all categorical variables, with reference levels appropriately chosen (e.g., "White" for race, "Employed" for employment).We evaluated multicollinearity using variance inflation factors (VIF), and model assumptions including linearity, homoscedasticity, and normality of residuals were assessed using residual plots and Q-Q plots. Influential observations were diagnosed using Cook’s distance. Model selection was guided by theoretical relevance. We began with a full model including all explanatory variables, then explored nested models to assess the relative contribution of variable groups (e.g., demographics only vs. full model) using adjusted R\^2R2 and AIC criteria. All analysis was conducted in R (version 4.3) using lm(), car, and ggplot2 for modeling and diagnostics.
+
+
+## Exploratory Data Analysis
+
+```{r}
+travel <- read.csv("travel.csv")
+```
+
+**Summary Statistics and Distributions**
+
+The summary statistics indicate that the average trip distance across all respondents is approximately **14.87 miles**, while the **median trip distance is 6.06 miles**, suggesting a **right-skewed distribution** many individuals take short trips, but a smaller number take very long ones, pulling the mean higher than the median. The **minimum trip distance is 0 miles**, which may reflect non-traveling individuals or extremely short trips, while the **maximum distance of 7,685.53 miles** likely reflects outliers such as air travel or rare, very long-distance trips. This wide range underscores substantial variation in travel behaviors across the population.
+
+
+```{r} 
+summary_stats <- data.frame(
+  Statistic = c("Mean", "Median", "Min", "Max"),
+  Value = c(
+    mean(travel$Avg_trip_distance_in_miles, na.rm = TRUE),
+    median(travel$Avg_trip_distance_in_miles, na.rm = TRUE),
+    min(travel$Avg_trip_distance_in_miles, na.rm = TRUE),
+    max(travel$Avg_trip_distance_in_miles, na.rm = TRUE)
+  )
+)
+
+knitr::kable(
+  summary_stats,
+  caption = "Summary Statistics of Average Trip Distance (in miles)",
+  digits = 2,
+  format = "latex",
+  booktabs = TRUE
+)
+
+```
+
+
+
+
+```{r}
+# Histograms of explanatory variable
+ggplot(travel, aes(x = Age)) +
+geom_histogram(bins = 20, fill = "darkblue", color = "white") +
+labs(title = "Distribution of Age",
+x = "Age",
+y = "Frequency") +
+theme_minimal()
+```
+
+The histogram shows the distribution of ages in the sample, with most individuals between the ages of 20 and 65. There is a relatively even spread across age groups, though slightly more respondents appear in the 50–60 age range. Fewer individuals are under 25, which may reflect lower independent travel among younger people. Overall, the distribution suggests good representation across adult age groups, with a slight skew toward middle-aged and older adults.
+
+
+```{r}
+# Histograms of explanatory variable
+ggplot(travel, aes(x = Household_income)) +
+geom_bar(fill = "darkblue", color = "white") +
+labs(title = "Distribution of Household income",
+x = "Household income",
+y = "Frequency") +
+theme_minimal()
+```
+
+The bar chart shows the distribution of household income among survey respondents. The most common income group is \$75,000 to \$149,999, followed by \$35,000 to \$74,999. Very few respondents fall into the lowest income category (under \$10,000), while the highest income group (\$150,000 and over) is moderately represented. This distribution indicates that the sample skews toward middle- and upper-middle-income households, with fewer low-income respondents.
+
+
+```{r}
+# Histogram for response variable 
+ggplot(travel, aes(x = Avg_trip_distance_in_miles)) +
+geom_histogram(bins = 50, fill = "darkblue", color = "white") +
+scale_x_continuous(limits = c(0, 50)) +
+labs(title = "Distribution of Average trip distance (in miles)",
+x = "Average trip distance (in miles)",
+y = "Frequency") +
+theme_minimal()
+```
+
+The histogram shows the distribution of average trip distance (in miles) among survey respondents. The distribution is highly right-skewed, with the majority of trips clustered between 0 and 10 miles. Very few individuals report average trip distances beyond 20 miles. This pattern suggests that most travel is short-distance, likely for routine purposes such as commuting, errands, or local activities, while long-distance trips are relatively rare.
+
+
+```{r}
+ggplot(travel, aes(x = Race, fill = Household_income)) +
+  geom_bar(position = "dodge") +
+  coord_flip() +
+  labs(title = "Income Distribution by Race",
+       x = "Race",
+       y = "Count",
+       fill = "Income Category")
+```
+
+The bar chart shows the distribution of household income across different racial groups. White respondents are the most represented in the dataset and have a relatively wide spread across all income categories, with a large concentration in the \$75,000–\$149,999 range. Other racial groups, including Black, Asian, and Multiracial individuals, show lower overall counts and are more concentrated in lower and middle income brackets. This visualization highlights both racial disparities in income distribution and unequal representation in the sample, which may have implications for interpreting travel behavior across demographic groups.
+
+
+**Visualizations exploring variables**
+
+```{r}
+ggplot(travel, aes(x = Travel_disability, y = Avg_trip_distance_in_miles, fill = factor(Employment_status))) +
+geom_boxplot() +
+labs(x = "Travel disability",
+y = "Avg trip distance in miles",
+fill = "Employment status") +
+scale_y_continuous(limits = c(0, 40)) +
+coord_flip() +
+theme_classic()
+```
+
+The boxplot above shows yearly miles personally driven by travel disability status and employment status. Individuals with no disability, especially those who are employed, drive significantly more than those with any form of disability. Among people with lifelong or temporary disabilities, driving activity is low regardless of employment status, with medians near zero. While employment increases mileage in the no-disability group, its effect is minimal among those with disabilities. This suggests that disability is a stronger constraint on driving behavior than employment, supporting its inclusion as a key predictor in our model of average trip distance.
+
+```{r}
+ggplot(travel, aes(x = Race, y = Avg_trip_distance_in_miles, fill = Race)) +
+  geom_bar(stat = "identity", width = 0.6) +
+  labs(
+    title = "Average Trip Distance by Race",
+    x = "Race",
+    y = "Average Trip Distance (miles)"
+  ) +
+  coord_flip() +
+  theme_minimal() +
+  scale_fill_brewer(palette = "Set2")
+```
+
+This bar chart above shows the total average trip distance by **race**. White individuals have by far the highest cumulative trip distance, while all other racial groups including Black, Asian, Hispanic, Multiracial, and others contribute much less. This likely reflects disparities in travel behavior, access to transportation, and structural inequalities such as residential location or Employment status. The stark differences suggest that race is an important factor in understanding travel patterns and should be included as a key explanatory variable in the regression model.
+
+# Results
+
+## Regression Analysis & Other Statistical Results
+
+The final regression model, selected using stepwise AIC (See R Appendix), identifies several key predictors of average trip distance: yearly miles personally driven, household income, count of public transit usage, sex, walk and rideshare usage, self-rated health, driving status, employment status, and age. Notably, race was not selected by the AIC procedure, suggesting that after accounting for socioeconomic and behavioral factors, race did not independently improve model fit. However, this does not imply that race is unimportant, rather, its effects may be mediated through income, transit access, or structural variables already included. In terms of results, individuals who drive more, earn higher incomes, or identify as male tend to travel longer distances per trip. For instance, those earning $150,000 or more travel an average of 9.76 miles farther than those in the $10,000–$34,999 bracket, and active drivers average 2.25 miles more per trip than non-drivers, keeping other factors constant. Conversely, poorer health and frequent walking are associated with shorter trip distances. Although the model explains a small portion of the variance in travel distance (low R²), the selected predictors reveal meaningful behavioral and socioeconomic patterns that shape individual mobility.
+ 
+
+```{r}
+#| include: false
+# Fit regression model(Full)
+new_model <- lm(
+  Avg_trip_distance_in_miles ~ Yearly_miles_personally_driven + 
+    Household_income + Count_of_public_transit_usage + Sex + 
+    Count_of_walk_trips + Count_of_rideshare_app_usage + Self_rated_health + 
+    Driver_status + Employment_status + Age + Race,
+  data = travel
+)
+
+# Model summary
+summary(new_model)
+```
+
+
+```{r}
+library(broom)
+
+final_model <- lm(Avg_trip_distance_in_miles ~ Yearly_miles_personally_driven + Household_income + Count_of_public_transit_usage + Sex + Count_of_walk_trips + Count_of_rideshare_app_usage + Self_rated_health + Driver_status + Employment_status + Age, data = travel)
+
+final_table <- tidy(final_model)
+
+knitr::kable(final_table, digits = 4, caption = "Regression Results: Predicting Average Trip Distance")
+```
+
+## Interpretation:
+
+The final multiple linear regression model identifies several key predictors of average trip distance.
+
+The intercept in this model represents the expected average trip distance for an individual in the **reference category**, which includes:
+
+-   Household income: **\$10,000–\$34,999**
+-   Sex: **Female**
+-   Self-rated health: **Excellent**
+-   Driver status: **Does not drive**
+-   Employment status: **Employed**
+-   Race: **White** (also the reference group, though not shown explicitly)
+-   All numeric predictors (e.g., yearly miles driven, counts of trips) are assumed to be **0**
+
+Under this profile, the average predicted trip distance is **3.35 miles** (*Intercept = 3.3515*, SE = 1.3798, *p* = 0.0151).
+
+-   For every **1-mile increase** in yearly personal driving, the average trip distance increases by **0.0003 miles** (*b* = 0.0003, SE = 0.0000, *p* \< 0.001). While the coefficient is small, it is statistically significant and consistent with expectations due to scaling.
+
+-   Individuals earning **\$150,000 or more** travel **0.76 miles farther** per trip compared to the reference group (*b* = 0.7623, SE = 0.8453, *p* \< 0.001). Similarly, those in the **\$75,000–\$149,999** group travel **1.72 miles more** (*b* = 1.7226, SE = 0.7442, *p* \< 0.001), and the **\$35,000–\$74,999** group shows a smaller but significant increase (*b* = 1.7761, *p* = 0.0209). The **\< \$10,000** group was not significantly different from the baseline.
+
+-   **Male respondents** travel on average **1.63 miles more** than females (*b* = 1.6273, SE = 0.4598, *p* \< 0.001), suggesting meaningful gender differences in travel behavior.
+
+-   Each additional **walk trip** reduces the average trip distance by **0.06 miles** (*b* = -0.0628, SE = 0.0269, *p* = 0.0107). Similarly, more **public transit usage** is associated with shorter trips (*b* = -0.1321, SE = 0.0544, *p* = 0.0206), likely reflecting local travel patterns.
+
+-   Respondents who **actively drive** travel about **2.25 miles farther per trip** than those who do not (*b* = 2.2522, SE = 1.0316, *p* = 0.0290), indicating the importance of car access.
+
+-   **Self-rated health** also influenced travel. Compared to those in excellent health, individuals in **poor** or **very good** health traveled **\~1.75 to 2.25 miles less**, though not all comparisons were statistically significant.
+
+```{r}
+#| include: false
+confint(final_model)[c("Yearly_miles_personally_driven",
+                 "Household_income$150,000 and over",
+                 "Count_of_public_transit_usage",
+                 "SexMale",
+                 "Self_rated_healthFair"), ]
+```
+
+
+```{r}
+#| include: false
+ci <- confint(final_model)
+
+selected_vars <- c("Yearly_miles_personally_driven",
+                   "Household_income$150,000 and over",
+                   "Count_of_public_transit_usage",
+                   "SexMale",
+                   "Self_rated_healthFair")
+
+```
+
+
+
+```{r}
+ci_table <- ci[rownames(ci) %in% selected_vars, ]
+ci_df <- data.frame(Predictor = rownames(ci_table), ci_table)
+rownames(ci_df) <- NULL
+colnames(ci_df) <- c("Predictor", "Lower 95% CI", "Upper 95% CI")
+
+kable(ci_df, digits = 4, caption = "Confidence Intervals for Selected Predictors") |>
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"))
+```
+
+
+
+Overall, the model confirms that transportation behavior and access, especially car usage and income, play critical roles in shaping travel distance.
+
+```{r}
+
+# Residuals and fitted values
+residuals <- residuals(final_model)
+fitted <- fitted(final_model)
+
+# Residuals vs Fitted
+resid_plot <- ggplot(data = data.frame(fitted, residuals), aes(x = fitted, y = residuals)) +
+  geom_point(alpha = 0.3) +
+  geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
+  labs(title = "Residuals vs Fitted", x = "Fitted Values", y = "Residuals") +
+  theme_minimal()
+
+# Q-Q Plot
+qq_plot <- ggplot(data = data.frame(sample = residuals), aes(sample = sample)) +
+  stat_qq() +
+  stat_qq_line(color = "red") +
+  labs(title = "Normal Q-Q Plot of Residuals", x = "Theoretical Quantiles", y = "Sample Quantiles") +
+  theme_minimal()
+
+# Cook's Distance
+cooks <- cooks.distance(final_model)
+cooks_plot <- ggplot(data = data.frame(index = 1:length(cooks), cooks = cooks), aes(x = index, y = cooks)) +
+  geom_point(alpha = 0.3) +
+  geom_hline(yintercept = 4/nrow(travel), color = "red", linetype = "dashed") +
+  labs(title = "Cook's Distance Plot", x = "Observation Index", y = "Cook's Distance") +
+  theme_minimal()
+
+grid.arrange(resid_plot, qq_plot, cooks_plot, ncol = 1)
+
+```
+
+## Model Diagnostics and Goodness-of-Fit
+
+To assess whether the assumptions of multiple linear regression were met, we evaluated three key diagnostic plots: the Residuals vs Fitted plot, the Q-Q Plot of residuals, and Cook’s Distance plot.
+
+### Residuals vs Fitted Plot
+
+This plot assesses **linearity** and **homoscedasticity** (constant variance of errors). The residuals appear randomly scattered around the horizontal line at 0, suggesting that the **linearity assumption is reasonably met**. There is some funneling (wider spread of residuals at low fitted values), which may indicate **mild heteroscedasticity**, but it is not extreme and likely acceptable given the large sample size.
+
+### Q-Q Plot of Residuals
+
+The normal Q-Q plot compares the distribution of residuals to a normal distribution. Most points lie on or near the reference line, although there is **noticeable deviation at the tails**, indicating that the **residuals are slightly right-skewed**. This is not unusual in large behavioral datasets with bounded outcomes (e.g., trip distance ≥ 0), and inference procedures are robust to mild departures from normality.
+
+### Cook’s Distance Plot
+
+Cook’s Distance evaluates the influence of individual observations on the fitted regression model. The red dashed line represents the threshold 4/n (approximately 0.000046), which is a conservative rule for flagging potentially influential points in large datasets.
+
+While some observations lie above this threshold—which is expected with such a low cutoff—**none approach conventional concern thresholds like 0.5 or 1.0**. The highest Cook’s Distance in our model is under 0.09.
+
+This indicates that **no observation exerts disproportionate influence on the regression results**, and supports the **overall stability and robustness** of our estimates.
+
+### Summary
+
+Taken together, these diagnostics suggest that the model fits the data reasonably well:
+
+-   **Linearity** and **additivity** are reasonably satisfied.
+-   **Normality of residuals** shows minor deviation at the extremes but no major concern.
+-   **Homoscedasticity** is mostly satisfied with some mild variance inflation.
+-   **No influential points** detected.
+
+We conclude that the model is appropriate for inference and prediction in this context.
+
+### Multicollinearity Check: Variance Inflation Factors (VIF)
+
+We computed Variance Inflation Factors (VIFs) (See R Appendix) to assess the presence of multicollinearity among predictors in the regression model.
+
+In our model:
+
+All VIF values are **below 2**.
+
+This means that **there is no evidence of severe multicollinearity** that would distort coefficient estimates or inflate standard errors. Therefore, all predictors can be retained in the model with confidence in the stability of the regression estimates.
+
+## Discussion
+
+The objective of this study was to identify the key demographic, socioeconomic, and health-related predictors of average trip distance using data from the 2017 National Household Travel Survey. Our results support the hypothesis that income level, driving status, health, and transportation behavior significantly affect how far individuals travel on average. Specifically, we found that individuals in higher income brackets, those who drive, and those in better health tend to travel farther per trip, while frequent users of walking and public transit travel shorter distances.
+
+These findings clearly answer our primary research question: *Which individual-level factors are most predictive of average trip distance in the U.S.?* The results show that access to private transportation (i.e., car ownership/driving), income, and health are consistently among the strongest predictors. This is consistent with prior literature suggesting that structural disparities in transportation access lead to unequal mobility outcomes. For example, our regression model indicated that individuals earning over \$150,000 annually travel, on average, 9.76 miles farther than those earning \$10,000–\$34,999. Similarly, active drivers travel over 1 mile farther per trip than non-drivers. These results confirm and extend existing theories of transportation inequity by quantifying the independent contributions of demographic and behavioral predictors.
+
+While our regression model yielded a relatively small R² of **0.007**, meaning it explains less than 1% of the variation in average trip distance, this does not invalidate the findings. Travel behavior is shaped by a wide array of unmeasured factors—such as trip purpose, land use, household composition, and local infrastructure that are not included in the current model. Still, the statistically significant predictors we identified highlight consistent and meaningful trends within this complexity.
+
+These results answer our central research question: *Which individual-level factors are most predictive of average trip distance in the U.S.?* For instance, individuals earning over 150,000 dollars  annually travel, on average, 9.76 miles farther per trip than those in the 10,000 - 34,999 dollars reference group. Likewise, individuals who drive average more than 1 additional mile per trip compared to non-drivers. These patterns suggest that car access and economic advantage are associated with greater mobility, reinforcing longstanding concerns about transportation equity in the United States.
+
+Visualizations and diagnostics reinforce the validity of our model. The **residuals vs. fitted plot** shows no major violations of linearity, while the **Q-Q plot** reveals slight deviation from normality at the tails—expected in a right-skewed variable like travel distance. The **Cook’s Distance plot** confirms the absence of highly influential observations. Additionally, **variance inflation factors (VIFs)** were well below conventional thresholds, indicating no problematic multicollinearity. Together, these diagnostics support the interpretability and reliability of our model coefficients, even if the overall model fit is modest.
+
+Nonetheless, this analysis has limitations. The low adjusted R² reminds us that average trip distance is a complex behavior likely influenced by contextual and geographic factors that are not captured in the data. Additionally, variables like race or employment status may serve as proxies for deeper structural or spatial inequalities. The cross-sectional nature of the data also restricts causal interpretation.
+
+In conclusion, even with modest predictive power, this study highlights clear and statistically significant associations between transportation behavior and sociodemographic characteristics. These insights can inform future mobility research and support efforts to design more equitable transportation systems by targeting access gaps across different demographics.
+
+# Appendix {.appendix}
+
+## R Code
+
+All R code used in this analysis is provided below for full reproducibility. Code is organized by task: data preparation, exploratory analysis, model fitting, and hypothesis testing.
+
+
+# Load packages
+
+```{r, echo = TRUE, results = 'markup'}
+library(ggplot2)
+library(broom)
+library(tidyverse)
+library(dplyr)
+library(performance)
+library(knitr)
+library(kableExtra)
+library(gridExtra)
+library(car)
+```
+
+# Load Dataset
+
+```{r, echo = TRUE, results = 'markup'}
+travel <- read.csv("travel.csv")
+```
+
+# Full and Final Models
+
+```{r, echo = TRUE, results = 'markup'}
+# Fit full model
+full_model <- lm(
+  Avg_trip_distance_in_miles ~ Age + Sex + Race + Household_income +
+    Employment_status + Self_rated_health + Travel_disability + Driver_status +
+    Yearly_miles_personally_driven + Count_of_public_transit_usage +
+    Count_of_rideshare_app_usage + Count_of_walk_trips,
+  data = travel
+)
+
+# Fit intercept-only (null) model
+intercept_model <- glm(Avg_trip_distance_in_miles ~ 1, data = travel)
+
+# Stepwise selection using AIC
+step_model <- step(intercept_model,
+                   scope = list(lower = intercept_model, upper = full_model),
+                   direction = "both",
+                   trace = 0)
+
+```
+
+```{r, echo = TRUE, results = 'markup'}
+# Final model
+final_model <- lm(
+  Avg_trip_distance_in_miles ~ Yearly_miles_personally_driven +
+    Household_income + Count_of_public_transit_usage + Sex +
+    Count_of_walk_trips + Count_of_rideshare_app_usage + Self_rated_health +
+    Driver_status + Employment_status + Age + Race,
+  data = travel
+)
+```
+
+# Final Model Coefficients
+
+```{r, echo = TRUE, results = 'markup'}
+knitr::kable(
+  tidy(final_model),
+  digits = 4,
+  caption = "Final Model Coefficients",
+  format = "latex",
+  booktabs = TRUE
+)
+```
+
+
+# Confidence Intervals 
+
+```{r, echo = TRUE, results = 'markup'}
+ci <- confint(final_model)
+
+selected_vars <- c("Yearly_miles_personally_driven",
+                   "Household_income$150,000 and over",
+                   "Count_of_public_transit_usage",
+                   "SexMale",
+                   "Self_rated_healthFair")
+
+ci_table <- ci[rownames(ci) %in% selected_vars, ]
+ci_df <- data.frame(Predictor = rownames(ci_table), ci_table)
+rownames(ci_df) <- NULL
+colnames(ci_df) <- c("Predictor", "Lower 95 CI", "Upper 95 CI")
+
+knitr::kable(
+  ci_df,digits = 4,caption = "Confidence Intervals for Selected Predictors", format = "latex",booktabs = TRUE
+)
+
+```
+
+# VIF
+
+```{r, echo = TRUE, results = 'markup'}
+# Check for multicollinearity
+library(car)
+vif(final_model)
+```
+
+
+# Diagnostic Plots
+
+```{r, echo = TRUE, results = 'markup'}
+# Residuals and fitted values
+residuals <- residuals(final_model)
+fitted <- fitted(final_model)
+
+# Residuals vs Fitted
+resid_plot <- ggplot(data = data.frame(fitted, residuals), aes(x = fitted, y = residuals)) +
+  geom_point(alpha = 0.3) +
+  geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
+  labs(title = "Residuals vs Fitted", x = "Fitted Values", y = "Residuals") +
+  theme_minimal()
+
+# Q-Q plot
+qq_plot <- ggplot(data = data.frame(sample = residuals), aes(sample = sample)) +
+  stat_qq() +
+  stat_qq_line(color = "red") +
+  labs(title = "Normal Q-Q Plot of Residuals", x = "Theoretical Quantiles", y = "Sample Quantiles") +
+  theme_minimal()
+
+# Cook's Distance
+cooks <- cooks.distance(final_model)
+cooks_plot <- ggplot(data = data.frame(index = 1:length(cooks), cooks = cooks), aes(x = index, y = cooks)) +
+  geom_point(alpha = 0.3) +
+  geom_hline(yintercept = 4/nrow(travel), color = "red", linetype = "dashed") +
+  labs(title = "Cook's Distance Plot", x = "Observation Index", y = "Cook's Distance") +
+  theme_minimal()
+
+grid.arrange(resid_plot, qq_plot, cooks_plot, ncol = 1)
+```
+
+
+# References
+
+
