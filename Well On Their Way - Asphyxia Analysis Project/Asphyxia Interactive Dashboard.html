@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asphyxia Analysis Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f5f5; padding: 20px; }
+        .container { max-width: 1400px; margin: 0 auto; }
+        .header { background: #ffffff; padding: 30px; border-radius: 4px; margin-bottom: 25px; box-shadow: 0 1px 3px rgba(0,0,0,0.12); border-bottom: 3px solid #2c3e50; }
+        .header h1 { color: #2c3e50; margin-bottom: 8px; font-size: 28px; font-weight: 600; }
+        .header p { color: #7f8c8d; font-size: 14px; }
+        .key-finding { background: #ecf0f1; border-left: 4px solid #27ae60; color: #27ae60; padding: 15px; border-radius: 3px; margin-top: 15px; font-size: 14px; }
+        .filters { background: #ffffff; padding: 25px; border-radius: 4px; margin-bottom: 25px; box-shadow: 0 1px 3px rgba(0,0,0,0.12); }
+        .filters h2 { margin-bottom: 20px; color: #2c3e50; font-size: 16px; font-weight: 600; }
+        .filter-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 25px; margin-bottom: 20px; }
+        .filter-group label { display: block; font-weight: 600; margin-bottom: 8px; color: #2c3e50; font-size: 13px; }
+        .checkbox-group { display: flex; flex-direction: column; gap: 6px; }
+        .checkbox-group label { display: flex; align-items: center; gap: 8px; font-weight: normal; color: #555; font-size: 13px; }
+        .checkbox-group input { cursor: pointer; width: 16px; height: 16px; }
+        select { padding: 8px 10px; border: 1px solid #bdc3c7; border-radius: 3px; font-size: 13px; color: #555; }
+        button { padding: 10px 20px; background: #2c3e50; color: white; border: none; border-radius: 3px; cursor: pointer; margin-right: 10px; font-size: 13px; font-weight: 600; }
+        button:hover { background: #34495e; }
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px; }
+        .kpi { background: #ffffff; padding: 20px; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.12); border-left: 4px solid #3498db; }
+        .kpi-label { color: #7f8c8d; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+        .kpi-value { font-size: 24px; font-weight: 700; color: #2c3e50; margin: 10px 0; }
+        .charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(550px, 1fr)); gap: 20px; margin-bottom: 25px; }
+        .chart-box { background: #ffffff; padding: 20px; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.12); }
+        .chart-box h3 { margin-bottom: 15px; color: #2c3e50; font-size: 14px; font-weight: 600; }
+        .chart-container { position: relative; height: 300px; }
+        table { width: 100%; border-collapse: collapse; background: #ffffff; border-radius: 3px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.12); }
+        thead { background: #ecf0f1; }
+        th { padding: 12px 15px; text-align: left; color: #2c3e50; font-weight: 600; font-size: 13px; border-bottom: 1px solid #bdc3c7; }
+        td { padding: 12px 15px; border-bottom: 1px solid #ecf0f1; font-size: 13px; }
+        tbody tr:hover { background: #f9f9f9; }
+        .table-container { margin-bottom: 25px; }
+        .table-container h3 { margin-bottom: 15px; color: #2c3e50; font-size: 14px; font-weight: 600; }
+        .mortality-value { color: #e74c3c; font-weight: 600; }
+        .referral-value { color: #3498db; font-weight: 600; }
+        .success-value { color: #27ae60; font-weight: 600; }
+        .significant { background: #ecf0f1; color: #27ae60; font-weight: 600; }
+        .not-significant { color: #95a5a6; }
+        .footer { text-align: center; color: #95a5a6; margin-top: 30px; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Asphyxia Analysis Dashboard</h1>
+            <p>Interactive Analysis of Maternal Referral Program - Well On Their Way</p>
+            <div class="key-finding">
+                Key Finding: Higher maternal referral rates are significantly associated with lower neonatal asphyxia mortality (Beta = -0.903, p = 0.042)
+            </div>
+        </div>
+
+        <div class="filters">
+            <h2>Filters</h2>
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label>Districts</label>
+                    <div class="checkbox-group">
+                        <label><input type="checkbox" id="gulu" checked> Gulu</label>
+                        <label><input type="checkbox" id="omoro" checked> Omoro</label>
+                        <label><input type="checkbox" id="lamwo" checked> Lamwo</label>
+                    </div>
+                </div>
+                <div class="filter-group">
+                    <label>Quarters</label>
+                    <div class="checkbox-group">
+                        <label><input type="checkbox" id="q1" checked> Q1 2023</label>
+                        <label><input type="checkbox" id="q2" checked> Q2 2023</label>
+                        <label><input type="checkbox" id="q3" checked> Q3 2023</label>
+                        <label><input type="checkbox" id="q4" checked> Q4 2023</label>
+                        <label><input type="checkbox" id="q5" checked> Q1 2024</label>
+                    </div>
+                </div>
+            </div>
+            <button onclick="updateDashboard()">Apply Filters</button>
+            <button onclick="resetFilters()">Reset All</button>
+        </div>
+
+        <div class="kpi-grid">
+            <div class="kpi">
+                <div class="kpi-label">Average Mortality Rate</div>
+                <div class="kpi-value"><span id="mortality" class="mortality-value">2.85</span></div>
+                <div class="kpi-label">per 1,000 births</div>
+            </div>
+            <div class="kpi">
+                <div class="kpi-label">Average Referral Rate</div>
+                <div class="kpi-value"><span id="referral" class="referral-value">9.5</span>%</div>
+                <div class="kpi-label">pregnant women referred</div>
+            </div>
+            <div class="kpi">
+                <div class="kpi-label">Total Cases</div>
+                <div class="kpi-value"><span id="cases">412</span></div>
+                <div class="kpi-label">asphyxia cases</div>
+            </div>
+            <div class="kpi">
+                <div class="kpi-label">Average Uterotonics Coverage</div>
+                <div class="kpi-value"><span id="uterotonics" class="success-value">96.7</span>%</div>
+                <div class="kpi-label">coverage rate</div>
+            </div>
+        </div>
+
+        <div class="charts-grid">
+            <div class="chart-box">
+                <h3>Mortality Trends by District</h3>
+                <div class="chart-container">
+                    <canvas id="trendChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-box">
+                <h3>District Performance Comparison</h3>
+                <div class="chart-container">
+                    <canvas id="comparisonChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <h3>District Summary</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>District</th>
+                        <th>Average Mortality (per 1000)</th>
+                        <th>Average Referral Rate (%)</th>
+                        <th>Total Cases</th>
+                        <th>Total Deaths</th>
+                    </tr>
+                </thead>
+                <tbody id="summaryTable"></tbody>
+            </table>
+        </div>
+
+        <div class="table-container">
+            <h3>Detailed Data View</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Quarter</th>
+                        <th>District</th>
+                        <th>Cases</th>
+                        <th>Mortality (per 1000)</th>
+                        <th>Referral Rate (%)</th>
+                        <th>Uterotonics (%)</th>
+                    </tr>
+                </thead>
+                <tbody id="detailTable"></tbody>
+            </table>
+        </div>
+
+        <div class="table-container">
+            <h3>Regression Model Results</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Variable</th>
+                        <th>Coefficient (Beta)</th>
+                        <th>P-Value</th>
+                        <th>Significance</th>
+                        <th>Interpretation</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="significant">
+                        <td>Overall Referral Rate</td>
+                        <td>-0.903</td>
+                        <td>0.042</td>
+                        <td>Significant (p &lt; 0.05)</td>
+                        <td>Each 1% increase in referral rate = 0.903 fewer deaths per 1000 births</td>
+                    </tr>
+                    <tr>
+                        <td>Year</td>
+                        <td>-1.4</td>
+                        <td>0.2</td>
+                        <td class="not-significant">Not Significant</td>
+                        <td>Year trend not statistically significant in adjusted model</td>
+                    </tr>
+                    <tr>
+                        <td>Resuscitation Success Rate</td>
+                        <td>0.01</td>
+                        <td>0.6</td>
+                        <td class="not-significant">Not Significant</td>
+                        <td>Success rate not significant after adjusting for other variables</td>
+                    </tr>
+                    <tr>
+                        <td>Uterotonics Coverage</td>
+                        <td>-0.07</td>
+                        <td>0.8</td>
+                        <td class="not-significant">Not Significant</td>
+                        <td>Coverage not significant in adjusted model</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="footer">
+            <p>Well On Their Way - Maternal and Neonatal Health Analytics | Data from Q1 2023 through Q1 2024</p>
+            <p>Model R-squared = 0.22 (Model explains 22% of variation in asphyxia-related neonatal mortality)</p>
+        </div>
+    </div>
+
+    <script>
+        const allData = [
+            {q:'Q1 2023',d:'Gulu',c:9,b:895,de:3,ref:73,adm:1103,u:98},
+            {q:'Q1 2023',d:'Omoro',c:8,b:1412,de:4,ref:151,adm:2007,u:98},
+            {q:'Q1 2023',d:'Lamwo',c:26,b:1500,de:3,ref:172,adm:2156,u:100},
+            {q:'Q2 2023',d:'Gulu',c:11,b:1061,de:1,ref:61,adm:1070,u:83},
+            {q:'Q2 2023',d:'Omoro',c:30,b:1643,de:3,ref:124,adm:2125,u:100},
+            {q:'Q2 2023',d:'Lamwo',c:26,b:1493,de:1,ref:153,adm:2344,u:97},
+            {q:'Q3 2023',d:'Gulu',c:25,b:827,de:1,ref:99,adm:1093,u:95},
+            {q:'Q3 2023',d:'Omoro',c:46,b:1302,de:1,ref:162,adm:2508,u:95},
+            {q:'Q3 2023',d:'Lamwo',c:28,b:1497,de:7,ref:168,adm:2364,u:99},
+            {q:'Q4 2023',d:'Gulu',c:36,b:740,de:1,ref:100,adm:1172,u:97},
+            {q:'Q4 2023',d:'Omoro',c:56,b:1342,de:8,ref:149,adm:2631,u:93},
+            {q:'Q4 2023',d:'Lamwo',c:20,b:1688,de:4,ref:180,adm:2526,u:99},
+            {q:'Q1 2024',d:'Gulu',c:12,b:758,de:1,ref:78,adm:1036,u:95},
+            {q:'Q1 2024',d:'Omoro',c:48,b:1526,de:3,ref:199,adm:2325,u:99},
+            {q:'Q1 2024',d:'Lamwo',c:26,b:1496,de:0,ref:190,adm:2302,u:96}
+        ];
+
+        let filteredData = [...allData];
+        let charts = {};
+
+        function updateDashboard() {
+            const districts = ['Gulu','Omoro','Lamwo'].filter(d => document.getElementById(d.toLowerCase()).checked);
+            const quarters = ['Q1 2023','Q2 2023','Q3 2023','Q4 2023','Q1 2024'].filter((q,i) => document.getElementById(['q1','q2','q3','q4','q5'][i]).checked);
+            
+            filteredData = allData.filter(row => districts.includes(row.d) && quarters.includes(row.q));
+            
+            updateKPIs();
+            updateCharts();
+            updateTables();
+        }
+
+        function updateKPIs() {
+            if (!filteredData.length) return;
+            const mort = (filteredData.reduce((s,r) => s + r.de/r.b*1000, 0) / filteredData.length).toFixed(2);
+            const ref = (filteredData.reduce((s,r) => s + r.ref/r.adm*100, 0) / filteredData.length).toFixed(1);
+            const cases = filteredData.reduce((s,r) => s + r.c, 0);
+            const uto = (filteredData.reduce((s,r) => s + r.u, 0) / filteredData.length).toFixed(1);
+            
+            document.getElementById('mortality').textContent = mort;
+            document.getElementById('referral').textContent = ref;
+            document.getElementById('cases').textContent = cases;
+            document.getElementById('uterotonics').textContent = uto;
+        }
+
+        function updateCharts() {
+            const quarters = [...new Set(filteredData.map(d => d.q))];
+            const gulu = quarters.map(q => {
+                const row = filteredData.find(d => d.q===q && d.d==='Gulu');
+                return row ? (row.de / row.b * 1000).toFixed(1) : null;
+            });
+            const omoro = quarters.map(q => {
+                const row = filteredData.find(d => d.q===q && d.d==='Omoro');
+                return row ? (row.de / row.b * 1000).toFixed(1) : null;
+            });
+            const lamwo = quarters.map(q => {
+                const row = filteredData.find(d => d.q===q && d.d==='Lamwo');
+                return row ? (row.de / row.b * 1000).toFixed(1) : null;
+            });
+
+            if (charts.trend) charts.trend.destroy();
+            charts.trend = new Chart(document.getElementById('trendChart'), {
+                type: 'line',
+                data: {
+                    labels: quarters,
+                    datasets: [
+                        {label:'Gulu',data:gulu,borderColor:'#3498db',backgroundColor:'rgba(52,152,219,0.05)',tension:0.4,borderWidth:2,fill:true},
+                        {label:'Omoro',data:omoro,borderColor:'#e74c3c',backgroundColor:'rgba(231,76,60,0.05)',tension:0.4,borderWidth:2,fill:true},
+                        {label:'Lamwo',data:lamwo,borderColor:'#27ae60',backgroundColor:'rgba(39,174,96,0.05)',tension:0.4,borderWidth:2,fill:true}
+                    ]
+                },
+                options: {
+                    responsive:true,
+                    maintainAspectRatio:false,
+                    plugins:{
+                        legend:{position:'bottom',labels:{boxWidth:12,font:{size:12}}}
+                    },
+                    scales:{
+                        y:{beginAtZero:true,ticks:{font:{size:11}}}
+                    }
+                }
+            });
+
+            const districts = [...new Set(filteredData.map(d => d.d))];
+            const mortData = districts.map(d => (filteredData.filter(x => x.d===d).reduce((s,x) => s + x.de/x.b*1000, 0) / filteredData.filter(x => x.d===d).length).toFixed(2));
+            const refData = districts.map(d => (filteredData.filter(x => x.d===d).reduce((s,x) => s + x.ref/x.adm*100, 0) / filteredData.filter(x => x.d===d).length).toFixed(1));
+
+            if (charts.comparison) charts.comparison.destroy();
+            charts.comparison = new Chart(document.getElementById('comparisonChart'), {
+                type: 'bar',
+                data: {
+                    labels: districts,
+                    datasets: [
+                        {label:'Mortality per 1000',data:mortData,backgroundColor:'#e74c3c',borderRadius:2},
+                        {label:'Referral Rate %',data:refData,backgroundColor:'#3498db',borderRadius:2}
+                    ]
+                },
+                options: {
+                    responsive:true,
+                    maintainAspectRatio:false,
+                    plugins:{
+                        legend:{position:'bottom',labels:{boxWidth:12,font:{size:12}}}
+                    },
+                    scales:{
+                        y:{beginAtZero:true,ticks:{font:{size:11}}}
+                    }
+                }
+            });
+        }
+
+        function updateTables() {
+            const districts = [...new Set(filteredData.map(d => d.d))];
+            let html = districts.map(d => {
+                const dData = filteredData.filter(x => x.d===d);
+                const mort = (dData.reduce((s,x) => s + x.de/x.b*1000, 0) / dData.length).toFixed(2);
+                const ref = (dData.reduce((s,x) => s + x.ref/x.adm*100, 0) / dData.length).toFixed(1);
+                const cases = dData.reduce((s,x) => s + x.c, 0);
+                const deaths = dData.reduce((s,x) => s + x.de, 0);
+                return `<tr><td>${d}</td><td class="mortality-value">${mort}</td><td class="referral-value">${ref}</td><td>${cases}</td><td>${deaths}</td></tr>`;
+            }).join('');
+            document.getElementById('summaryTable').innerHTML = html;
+
+            html = filteredData.map(d => {
+                const mort = (d.de/d.b*1000).toFixed(2);
+                const ref = (d.ref/d.adm*100).toFixed(1);
+                return `<tr><td>${d.q}</td><td>${d.d}</td><td>${d.c}</td><td class="mortality-value">${mort}</td><td class="referral-value">${ref}</td><td>${d.u}</td></tr>`;
+            }).join('');
+            document.getElementById('detailTable').innerHTML = html;
+        }
+
+        function resetFilters() {
+            document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = true);
+            updateDashboard();
+        }
+
+        window.addEventListener('DOMContentLoaded', updateDashboard);
+    </script>
+</body>
+</html>
