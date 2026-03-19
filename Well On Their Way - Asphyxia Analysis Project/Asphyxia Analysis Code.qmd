@@ -1,0 +1,167 @@
+---
+format: pdf
+output:
+  pdf_document:
+    latex_engine: xelatex
+    fontsize: 10pt
+header-includes:
+  - \usepackage[paperwidth=8.5in, paperheight=11in, top=0.25in, bottom=0.25in, left=0.25in, right=0.25in]{geometry}
+title: ""
+author: ""
+date: ""
+---
+
+```{r import_packages, eval=FALSE}
+# Loading packages
+library(corrplot)
+library(ggplot2)
+library(gtsummary)
+library(lubridate)
+library(stringr)
+library(tidyverse)
+```
+
+```{r import_datasets, eval=FALSE}
+# Loading datasets
+asphyxia_raw <- read_csv("Asphyxia.csv") # Neonatal asphyxia outcomes data
+referrals_raw <- read_csv("Referrals.csv") # Maternal referral data
+pph_raw <- read_csv("PPH.csv") # Postpartum hemorrhage/uterotonic coverage data
+
+# Datasets referrals_raw and pph_raw were also cleaned but were not included in this sample code
+```
+
+```{r cleaning_datasets, eval=FALSE}
+# Cleaning asphyxia data
+
+asphyxia_clean <- asphyxia_raw |>
+  mutate(Date = mdy(Date)) |> # Parsing date column
+  filter(!is.na(Date)) |> # Removing dates that are invalid
+  
+  # Pivoting district columns from wide to long format
+  pivot_longer(cols = matches("^(Gulu|Omoro|Lamwo)"), # Selecting district columns
+               names_to = "variable",
+               values_to = "value",
+               values_transform = list(value = as.character))|> # Ensuring values are character
+  
+  mutate(district = str_extract(variable, "^[A-Za-z]+"), # Extracting district name
+         metric = str_remove(variable, "^[A-Za-z]+ - ")) |> # Extracting metric name
+  
+  # Pivoting back to wide format for analysis
+  pivot_wider(id_cols = c(Date, Quarter, district),
+                          names_from = metric,
+                          values_from = value) |>
+  rename(asphyxia_cases = `Number of babies with asphyxia`,
+         total_births = `Total live births (facility)`,
+         asphyxia_rate = `% babies delivered in facility with asphyxia`,
+         successful_resus = `Number of successful rescuscitations`,
+         resus_success_rate = `% Percent successful rescuscitations`,
+         asphyxia_deaths = `Number of babies died from asphyxia`,
+         asphyxia_mortality_rate = `% Percent of babies died from asphyxia`)|>
+  # Removing % and convert
+  mutate(across(asphyxia_cases:asphyxia_mortality_rate, \(x) as.numeric(str_remove(x, "%")))) 
+```
+
+```{r merge, eval=FALSE}
+# Merging asphyxia, referral, and PPH datasets and constructing variables for analysis
+data <- asphyxia_clean |>
+  inner_join(referrals_clean, by = c("Date", "Quarter", "district")) |>
+  inner_join(pph_clean, by = c("Date", "Quarter", "district")) |>
+  mutate(# Replacing NA with 0 for referral counts before summation
+         referred_out_hc2_3 = replace_na(referred_out_hc2_3, 0),
+         referred_out_hc4 = replace_na(referred_out_hc4, 0),
+         total_referrals_out = referred_out_hc2_3 + referred_out_hc4,
+         
+         # Computing for rates of total referrals, overall referral rate, asphyxia per 1000,
+         # and deaths per 1000
+         overall_referral_rate = (total_referrals_out / total_admissions) * 100,
+         asphyxia_per_1000 = (asphyxia_cases / total_births) * 1000,
+         deaths_per_1000 = (asphyxia_deaths / total_births) * 1000,
+         
+         # Extracting the variable year and converting variable district to factor
+         year = year(Date),
+         district = factor(district)) |>
+  
+  # Removing rows with missing or zero births or admissions
+  filter(!is.na(total_births),
+         !is.na(total_admissions),
+         !is.na(asphyxia_cases),
+         total_births > 0)
+```
+
+```{r fit_model, eval=FALSE}
+# Fitting multiple regression model
+# Outcome variable: Asphyxia-related deaths per 1000 live births
+# Explanatory variable: Overall referral rate
+# Control variables: Year, resuscitation success, uterotonics coverage
+model <- lm(deaths_per_1000 ~ overall_referral_rate + year + resus_success_rate + uterotonics_coverage,
+            data = data |>
+            filter(!is.na(deaths_per_1000), !is.na(uterotonics_coverage)))
+summary(model)
+```
+
+```{r model_table, eval=FALSE}
+# Creating a formatted regression table
+model_table <- model |>
+  tbl_regression(exponentiate = FALSE,
+                 label = list(overall_referral_rate ~ "Overall Referral Rate (%)",
+                              year ~ "Year",
+                              resus_success_rate ~ "Resuscitation Success (%)",
+                              uterotonics_coverage ~ "Uterotonics Coverage (%)"),
+  include = c(overall_referral_rate, year, resus_success_rate, uterotonics_coverage)) |>
+  bold_p(t = 0.05)
+model_table
+```
+
+```{r corr_matrix, eval=FALSE}
+# Correlation Matrix
+correlation_dataset <- data |>
+  select(overall_referral_rate, resus_success_rate, uterotonics_coverage, deaths_per_1000,
+         asphyxia_per_1000) |>
+  na.omit()
+correlation_matrix <- cor(correlation_dataset)
+corrplot(correlation_matrix, method = "color",  number.cex = 0.5, type = "upper", addCoef.col = "grey")
+```
+
+```{r diagnostics, eval=FALSE}
+# Model Diagnostics
+diagnostic_df <- augment(model)
+
+# Residual versus Fitted plot, checking for linearity and homoscedasticity
+ggplot(diagnostic_df, aes(x = .fitted, y = .resid)) +
+  geom_point(alpha = 0.5) +
+  geom_hline(yintercept = 0, color = "blue", linetype = "dashed") +
+  theme_minimal()
+
+# QQ plot, checking for normality of residuals
+ggplot(diagnostic_df, aes(sample = .resid)) +
+  stat_qq() +
+  stat_qq_line(color = "blue") +
+  theme_minimal()
+
+# Variance Inflation Factor, checking for multicollinearity
+vif(model)
+```
+
+*The specific question the code is written to address (i.e., the hypothesis)*
+
+Using maternal and neonatal health data from health centers in rural Uganda, this analysis aimed **to evaluate whether a healthcare nonprofit’s maternal referral program is effectively reducing neonatal deaths due to birth asphyxia**. Specifically, we asked the research question: **Are higher maternal referral rates associated with less asphyxia-related neonatal deaths per 1000 live births?**
+
+*A summary of key results*
+
+After fitting a multiple linear regression model in R, we found that **higher overall maternal referral rates were significantly associated with lower asphyxia-related neonatal deaths per 1000 live births** ($\beta$= -0.903, $p$ = 0.042) after adjusting for variables year, resuscitation success rate, uterotonics coverage. The aforementioned variables were not statistically significant factors in the adjusted model, and furthermore, the model explained approximately 22% of the variation in asphyxia-related neonatal mortality ($R^2$ = 0.22) reflecting that district-level quarterly data cannot capture individual-level factors which likely account for the unexplained variation.
+
+*Why does the answer to this question matter?*
+
+Birth asphyxia is a significant cause of neonatal mortality and delays in accessing care can be fatal, and this analysis evaluates one of Well On Their Way’s largest initiatives, maternal referrals, if it is achieving its intended impact. By quantifying the association between referral rates and asphyxia-related neonatal deaths, this analysis **provides evidence on whether the initiative improves neonatal outcomes that can be used for the program improvement in Well On Their Way and better maternal and child health strategies in similarly under-resourced** **communities.**
+
+*Most challenging part of this project and how was it tackled?*
+
+The most challenging part was that the **data were highly inconsistent and poorly standardized**, with different variable names across files, percentages recorded with symbols, and missing values across quarters and districts. I addressed this by carefully cleaning and renaming variables, converting all percentage strings to numeric values, and calculating consistent per-1000 rates to ensure the final analysis was based on accurate data.
+
+*One piece of output that depicts the central findings from the code*
+
+The model shows that there is a significant relationship between the referral rates and neonatal deaths, **higher maternal referral rates are associated with lower asphyxia-related neonatal deaths** with a coefficient of $\beta$ = -0.903 ($p$ = 0.042). Other factors such as year, resuscitation success, and uterotonics coverage are not statistically significant in this analysis.
+
+*Whether the code was written as an individual or group effort*
+
+This was an **individual analysis completed as part of my role as a data analyst for Well On Their Way which is a non-profit organization reducing maternal and infant mortality in rural Uganda**. In R, I cleaned three datasets (asphyxia, maternal referrals, and postpartum hemorrhage), computed referral rate and deaths per 1000 live births rate, merged the datasets by variables date, quarter, and district, and fitted the regression analysis and diagnostic plots.
