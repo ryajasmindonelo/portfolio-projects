@@ -1,7 +1,9 @@
 Hi! I'm Rya. These are some of the data analysis and research projects I've worked on. 
 
 Case Study on 2017 National Household Travel Survey (NHTS) dataset
+
 Objective: To investigate demographic, health, and behavioral predictors of average trip distance among U.S. residents.
+
 Methods & Skills: Data exploration and analysis, multiple linear regression, statistical modeling, diagnostic testing, assumption validation, documentation of model assumptions and methodology
 
 Case Study on Factors Behind Infrequent Voting
