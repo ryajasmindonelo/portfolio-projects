@@ -23,6 +23,6 @@ Methods & Skills: Python development, feature implementation, data structure des
 
 ## Maternal Referral Program Impact: Neonatal Asphyxia Analysis
 
-Objective: Evaluate the effectiveness of a maternal referral program in reducing neonatal deaths in rural Uganda.
+Objective: To evaluate the effectiveness of a maternal referral program in reducing neonatal deaths in rural Uganda.
 
 Methods & Skills: Data quality improvement and standardization with documentation of cleaning processes, data cleaning and transformation (converting inconsistent formats, standardizing variable names), data integration and merging across multiple datasets, multiple linear regression analysis, data accuracy and completeness, domprehensive documentation of data sources and variable definitions
