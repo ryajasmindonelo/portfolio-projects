@@ -1,4 +1,4 @@
-## Hi! I'm Rya. These are some of the data analysis and research projects I've worked on. 
+# Hi! I'm Rya. These are some of the data analysis and research projects I've worked on. 
 
 ## Case Study on 2017 National Household Travel Survey (NHTS) dataset
 
