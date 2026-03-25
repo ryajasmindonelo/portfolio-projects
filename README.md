@@ -44,7 +44,7 @@
 **Programming Languages:** Python, Jupyter Notebook, VS Code, GitHub
 
 
-## Well On Their Way: Maternal Referral Program Impact on Neonatal Asphyxia Analysis
+## Well On Their Way - Maternal Referral Program Impact on Neonatal Asphyxia Analysis
 
 **Objective:** To evaluate the effectiveness of a maternal referral program in reducing neonatal deaths in rural Uganda.
 
