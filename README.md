@@ -36,7 +36,7 @@
 **Objective:** To develop a Python package to enhance cooking and baking experiences for home cooks and the general public.
 
 **Methods & Skills:**
-- Python development
+- Python package development
 - Feature implementation
 - Data structure design
 - Code documentation
@@ -48,7 +48,7 @@
 
 **Objective:** To evaluate the effectiveness of a maternal referral program in reducing neonatal deaths in rural Uganda.
 
-**Programming Language:** SQL, R, Python, Tableau, Excel
+**Programming Languages:** SQL, R, Python, Tableau, Excel
 
 **Methods & Skills:** 
 - Data quality improvement and standardization with documentation of cleaning processes
