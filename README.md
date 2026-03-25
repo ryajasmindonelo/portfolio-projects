@@ -4,7 +4,13 @@
 
 Objective: To investigate demographic, health, and behavioral predictors of average trip distance among U.S. residents.
 
-Methods & Skills: Data exploration and analysis, multiple linear regression, statistical modeling, diagnostic testing, assumption validation, documentation of model assumptions and methodology
+Methods & Skills: 
+- Data exploration and analysis
+- Statistical modeling
+- Multiple linear regression
+- Assumption validation
+- Diagnostic testing
+- Documentation of model assumptions and methodology
 
 Programming Language: R
 
