@@ -33,9 +33,9 @@
 
 ## ReciPy: Kitchen Companion Application (Python Package)
 
-**Programming Languages:** Python, Jupyter Notebook, VS Code, GitHub
-
 **Objective:** To develop a Python package to enhance cooking and baking experiences for home cooks and the general public.
+
+**Programming Languages:** Python, Jupyter Notebook, VS Code, GitHub
 
 **Methods & Skills:**
 - Python package development
