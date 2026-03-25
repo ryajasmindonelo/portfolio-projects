@@ -11,26 +11,36 @@
 - Assumption validation
 - Diagnostic testing
 - Documentation of model assumptions and methodology
-- 
+  
 **Programming Language:** R
 
 
 ## Case Study on Factors Behind Infrequent Voting
 
-Objective: To examine the relationship between political party affiliation and voting behavior to predict infrequent voters.
+**Objective:** To examine the relationship between political party affiliation and voting behavior to predict infrequent voters.
 
-Methods & Skills: Data cleaning and recoding, handling missing data, logistic regression, model selection and optimization, binary classification modeling, data dictionary creation, documentation of variable transformations
+**Methods & Skills:** 
+- Data cleaning and recoding
+- Handling missing data
+- Logistic regression
+- Model selection and optimization
+- Binary classification modeling
+- Documentation of variable transformations
 
-Programming Language: R
+**Programming Language:** R
 
 
 ## ReciPy: Kitchen Companion Application (Python Package)
 
-Objective: To develop a Python package to enhance cooking and baking experiences for home cooks and the general public.
+**Objective:** To develop a Python package to enhance cooking and baking experiences for home cooks and the general public.
 
-Methods & Skills: Python development, feature implementation, data structure design, code documentation
+**Methods & Skills:**
+- Python development
+- Feature implementation
+- Data structure design
+- Code documentation
 
-Programming Language: Python, Jupyter Notebook, VS Code, GitHub
+**Programming Languages:** Python, Jupyter Notebook, VS Code, GitHub
 
 
 
