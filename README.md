@@ -4,6 +4,8 @@
 
 **Objective:** To investigate demographic, health, and behavioral predictors of average trip distance among U.S. residents.
 
+**Programming Language:** R
+
 **Methods & Skills:**
 - Data exploration and analysis
 - Statistical modeling
@@ -12,12 +14,12 @@
 - Diagnostic testing
 - Documentation of model assumptions and methodology
   
-**Programming Language:** R
-
 
 ## Case Study on Factors Behind Infrequent Voting
 
 **Objective:** To examine the relationship between political party affiliation and voting behavior to predict infrequent voters.
+
+**Programming Language:** R
 
 **Methods & Skills:** 
 - Data cleaning and recoding
@@ -27,7 +29,6 @@
 - Binary classification modeling
 - Documentation of variable transformations
 
-**Programming Language:** R
 
 
 ## ReciPy: Kitchen Companion Application (Python Package)
@@ -43,12 +44,17 @@
 **Programming Languages:** Python, Jupyter Notebook, VS Code, GitHub
 
 
-
 ## Maternal Referral Program Impact: Neonatal Asphyxia Analysis
 
-Objective: To evaluate the effectiveness of a maternal referral program in reducing neonatal deaths in rural Uganda.
+**Objective:** To evaluate the effectiveness of a maternal referral program in reducing neonatal deaths in rural Uganda.
 
-Methods & Skills: Data quality improvement and standardization with documentation of cleaning processes, data cleaning and transformation (converting inconsistent formats, standardizing variable names), data integration and merging across multiple datasets, multiple linear regression analysis, data accuracy and completeness, comprehensive documentation of data sources and variable definitions, building interactive dashboards 
+**Programming Language:** SQL, R, Python, Tableau, Excel
 
-Programming Language: SQL, R, Python, Tableau, Excel
-
+**Methods & Skills:** 
+- Data quality improvement and standardization with documentation of cleaning processes
+- Data cleaning and transformation (converting inconsistent formats, standardizing variable names)
+- Data integration and merging across multiple datasets
+- Multiple linear regression analysis
+- Data accuracy and completeness
+- Comprehensive documentation of data sources and variable definitions
+- Building interactive dashboards 
