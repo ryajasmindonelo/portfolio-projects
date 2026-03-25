@@ -3,6 +3,7 @@
 ## Case Study on 2017 National Household Travel Survey (NHTS) dataset
 
 **Objective:** To investigate demographic, health, and behavioral predictors of average trip distance among U.S. residents.
+
 **Methods & Skills:**
 - Data exploration and analysis
 - Statistical modeling
@@ -10,6 +11,7 @@
 - Assumption validation
 - Diagnostic testing
 - Documentation of model assumptions and methodology
+- 
 **Programming Language:** R
 
 
