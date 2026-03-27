@@ -46,7 +46,7 @@
 
 ## Well On Their Way - Maternal Referral Program Impact on Neonatal Asphyxia Analysis
 
-**Objective:** To evaluate the effectiveness of a maternal referral program in reducing neonatal deaths in rural Uganda for Well On Their Way (https://wellontheirway.org/).
+**Objective:** To evaluate the effectiveness of a maternal referral program in reducing neonatal deaths in rural Uganda for Well On Their Way (https://wellontheirway.org/), a non-profit improving health outcomes there.
 
 **Programming Languages:** SQL, R, Python, Tableau, Excel
 
