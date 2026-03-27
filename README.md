@@ -1,4 +1,22 @@
-# Hi! I'm Rya. These are some of the data analysis and research projects I've worked on. 
+# Hi! I'm Rya 👋
+I'm a Mathematics and Statistical & Data Sciences double major at Smith College.
+
+These are some of the data analysis and research projects I've worked on, including:
+- Case studies using datasets that showcase my skills in statistical modeling, data analysis, and writing analytical reports
+- A Python package developed
+- An analysis project for a nonprofit where I work as a Data and Strategy Analyst
+
+**Programming Languages/Tools I Use:**
+- Python
+- R/R Studio
+- SQL
+- Tableau
+- Power BI
+- Github
+- Git
+- VS Code
+- Microsoft Excel
+- Google Sheets
 
 ## Case Study on 2017 National Household Travel Survey (NHTS) dataset
 
